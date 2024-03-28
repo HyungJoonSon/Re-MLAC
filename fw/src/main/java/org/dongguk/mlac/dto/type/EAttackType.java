@@ -30,5 +30,6 @@ public enum EAttackType {
     DOS_SLOWLORIS("DOS_SLOWLORIS"),
     GENERIC("GENERIC"),
     ANALYSIS("ANALYSIS");
-    private final String type;
+
+    private final String attackType;
 }

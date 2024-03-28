@@ -5,12 +5,15 @@ import lombok.Builder;
 
 import java.util.List;
 import java.util.Map;
+
 @Builder
 public record AnalysisResultDto(
         @JsonProperty("ip")
         String ip,
+
         @JsonProperty("port")
         String port,
+
         @JsonProperty("body")
         List<Map<String, String>> body,
 

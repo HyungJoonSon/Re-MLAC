@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.dongguk.mlac.dto.type.EAttackType;
+import org.dongguk.mlac.dto.type.EBlock;
 
 import java.time.LocalDateTime;
 
@@ -19,24 +20,23 @@ public class FirewallLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "ip")
+    @Column(name = "ip", nullable = false, updatable = false)
     private String ip;
 
-    @Column(name = "port")
-    private String port;
-
-    @Column(name = "attack_type")
+    @Column(name = "update_type", nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
-    private EAttackType attackType;
+    private EBlock updateType;
 
-    @Column(name = "attacked_at", nullable = false)
-    private LocalDateTime attackedAt;
+    @Column(name = "update_at", nullable = false, updatable = false)
+    private LocalDateTime updateAt;
 
     @Builder
-    public FirewallLog(String ip, String port, LocalDateTime attackedAt, EAttackType attackType) {
+    public FirewallLog(
+            String ip,
+            EBlock updateType
+    ) {
         this.ip = ip;
-        this.port = port;
-        this.attackedAt = attackedAt;
-        this.attackType = attackType;
+        this.updateType = updateType;
+        this.updateAt = LocalDateTime.now();
     }
 }
