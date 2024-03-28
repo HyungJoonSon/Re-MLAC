@@ -13,6 +13,7 @@ public enum ErrorCode {
     INVALID_PARAMETER_FORMAT(40002, HttpStatus.BAD_REQUEST, "요청에 유효하지 않은 인자 형식입니다."),
     BAD_REQUEST_JSON(40003, HttpStatus.BAD_REQUEST, "잘못된 JSON 형식입니다."),
     ALREADY_UPDATED(40004, HttpStatus.BAD_REQUEST, "이미 업데이트된 상태입니다."),
+    DUPLICATE_RESOURCE(40005, HttpStatus.BAD_REQUEST, "중복된 리소스가 존재합니다."),
 
     //404
     NOT_FOUND_RESOURCE(40400, HttpStatus.NOT_FOUND, "해당 리소스를 찾을 수 없습니다."),

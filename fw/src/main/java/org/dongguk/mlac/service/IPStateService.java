@@ -5,6 +5,7 @@ import org.dongguk.mlac.domain.IPState;
 import org.dongguk.mlac.dto.request.AnalysisResultDto;
 import org.dongguk.mlac.dto.request.UpdateIPStateDto;
 import org.dongguk.mlac.dto.type.EBlock;
+import org.dongguk.mlac.event.CreateIPStateEvent;
 import org.dongguk.mlac.event.UpdateIPStateEvent;
 import org.dongguk.mlac.exception.CommonException;
 import org.dongguk.mlac.exception.ErrorCode;
@@ -20,30 +21,25 @@ public class IPStateService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    @Transactional
     public void createIPState(AnalysisResultDto analysisResultDto) {
         // 공격이 아니라면 무시
         if ("BENIGN".equals(analysisResultDto.attackType())) {
             return ;
         }
 
-        // IPState가 없다면 생성
-        IPState ipState = ipStateRepository.findByIp(analysisResultDto.ip())
-                .orElseGet(() ->
-                        ipStateRepository.save(IPState.builder()
-                                .ip(analysisResultDto.ip())
-                                .isBlocked(false).build())
-                );
+        // IPState가 이미 존재한다면 예외 처리
+        ipStateRepository.findByIp(analysisResultDto.ip())
+                .orElseThrow(() -> new CommonException(ErrorCode.DUPLICATE_RESOURCE));
 
         // IPState가 차단되어 있지 않다면 차단
-        if (!ipState.getIsBlocked()) {
-            ipState.updateBlocked(true);
-        }
+        IPState ipState = ipStateRepository.save(IPState.builder()
+                .ip(analysisResultDto.ip())
+                .isBlocked(true).build()
+        );
 
         // Event 전파
-        applicationEventPublisher.publishEvent(UpdateIPStateEvent.builder()
-                .ip(analysisResultDto.ip())
-                .updateType(EBlock.BLOCK).build()
+        applicationEventPublisher.publishEvent(CreateIPStateEvent.builder()
+                .ip(ipState.getIp()).build()
         );
     }
 
@@ -63,8 +59,8 @@ public class IPStateService {
 
         // Event 전파
         applicationEventPublisher.publishEvent(UpdateIPStateEvent.builder()
-                .ip(ip)
-                .updateType(updateIPStateDto.isBlocked() ? EBlock.BLOCK : EBlock.UNBLOCK).build()
+                .ip(ipState.getIp())
+                .updateType(ipState.getIsBlocked() ? EBlock.BLOCK : EBlock.UNBLOCK).build()
         );
     }
 }

@@ -1,7 +1,7 @@
 package org.dongguk.mlac.service;
 
 import lombok.RequiredArgsConstructor;
-import org.dongguk.mlac.domain.AttackRegex;
+import org.dongguk.mlac.domain.Pipelines;
 import org.dongguk.mlac.domain.WebServerLog;
 import org.dongguk.mlac.dto.request.AnalysisResultDto;
 import org.dongguk.mlac.dto.type.EAttackType;
@@ -21,13 +21,13 @@ public class WebServerLogService {
 
     public void preventAttack(AnalysisResultDto analysisResultDto) {
         String attackType = analysisResultDto.attackType();
-        List<AttackRegex> regexes = regexRepository.findAll();
+        List<Pipelines> regexes = regexRepository.findAll();
 
         if ("BENIGN".equals(attackType)) {
             return;
         }
 
-        for (AttackRegex regex : regexes) {
+        for (Pipelines regex : regexes) {
             if (containsAttack(analysisResultDto.body(), regex.getRegex())) {
                 if (!attackExists(regex.getRegex())) {
                     saveAttackLog(attackType, regex.getRegex());

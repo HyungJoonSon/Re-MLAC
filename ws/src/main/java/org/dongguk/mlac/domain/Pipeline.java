@@ -8,13 +8,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "attack_regexs")
-public class AttackRegex {
+@Table(name = "pipelines")
+public class Pipelines {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "regex", nullable = false)
+    @Column(name = "regex", nullable = false, updatable = false)
     private String regex;
 }
