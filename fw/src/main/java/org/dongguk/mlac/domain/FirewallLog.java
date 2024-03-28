@@ -5,7 +5,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.dongguk.mlac.dto.type.EAttackType;
 import org.dongguk.mlac.dto.type.EBlock;
 
 import java.time.LocalDateTime;
