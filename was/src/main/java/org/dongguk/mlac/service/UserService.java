@@ -25,8 +25,10 @@ public class UserService {
     public void updateUserState(UpdateUserStateRequestDto updateUserStateRequestDto){
         // 주최자를 확인하고 주최자가 없으면 return
         EOrganizer organizer = EOrganizer.fromEAttack(updateUserStateRequestDto.attackType());
+        String username = (String) updateUserStateRequestDto.body().get("username");
+        Boolean isBlocked = (Boolean) updateUserStateRequestDto.body().get("is_blocked");
 
-        if (organizer == null){
+        if (organizer == null || username == null || isBlocked == null) {
             return;
         }
 
@@ -36,19 +38,19 @@ public class UserService {
         User user;
 
         if (area == null){
-            user = userRepository.findByUsername(updateUserStateRequestDto.username())
+            user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
         } else {
-            user = userRepository.findByUsernameAndArea(updateUserStateRequestDto.username(), area)
+            user = userRepository.findByUsernameAndArea(username, area)
                     .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
         }
 
         // Update할 필요가 없다면 return하고 필요하다면 update
-        if (user.getIsBlocked() == updateUserStateRequestDto.isBlocked()){
+        if (user.getIsBlocked() == isBlocked){
             return;
         }
 
-        user.updateBlock(updateUserStateRequestDto.isBlocked());
+        user.updateBlock(isBlocked);
 
         applicationEventPublisher.publishEvent(UpdateUserStateEvent.builder()
                 .username(user.getUsername())
