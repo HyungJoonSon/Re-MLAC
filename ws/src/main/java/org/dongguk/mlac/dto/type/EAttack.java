@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum EAttackType {
+public enum EAttack {
     BENIGN("BENIGN"),
     PORTSCAN("PORTSCAN"),
     RECONNAISSANCE("RECONNAISSANCE"),

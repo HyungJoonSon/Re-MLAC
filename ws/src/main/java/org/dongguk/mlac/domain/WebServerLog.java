@@ -5,7 +5,8 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.dongguk.mlac.dto.type.EAttackType;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -17,23 +18,15 @@ public class WebServerLog {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "regex", nullable = false)
+    @Column(name = "regex", nullable = false, updatable = false)
     private String regex;
 
-    @Column(name = "attack_type")
-    @Enumerated(EnumType.STRING)
-    private EAttackType attackType;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @Builder
-    public WebServerLog(String regex, EAttackType attackType) {
-        this.attackType = attackType;
+    public WebServerLog(String regex) {
         this.regex = regex;
-    }
-
-    public static WebServerLog createWebServerLog(String regex, EAttackType attackType) {
-        return WebServerLog.builder()
-                .regex(regex)
-                .attackType(attackType)
-                .build();
+        this.createdAt = LocalDateTime.now();
     }
 }

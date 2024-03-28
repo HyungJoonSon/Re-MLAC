@@ -1,57 +1,59 @@
 package org.dongguk.mlac.service;
 
 import lombok.RequiredArgsConstructor;
-import org.dongguk.mlac.domain.Pipelines;
-import org.dongguk.mlac.domain.WebServerLog;
+import org.dongguk.mlac.domain.Pipeline;
+import org.dongguk.mlac.domain.Regex;
 import org.dongguk.mlac.dto.request.AnalysisResultDto;
-import org.dongguk.mlac.dto.type.EAttackType;
-import org.dongguk.mlac.repository.AttackRegexRepository;
-import org.dongguk.mlac.repository.WebServerLogRepository;
+import org.dongguk.mlac.dto.type.EScript;
+import org.dongguk.mlac.event.CreatePipelineEvent;
+import org.dongguk.mlac.repository.PipelineRepository;
+import org.dongguk.mlac.repository.RegexRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
-public class WebServerLogService {
-    private final WebServerLogRepository attackRepository;
-    private final AttackRegexRepository regexRepository;
+public class PipelineService {
+    private final PipelineRepository pipelineRepository;
+    private final RegexRepository regexRepository;
 
-    public void preventAttack(AnalysisResultDto analysisResultDto) {
-        String attackType = analysisResultDto.attackType();
-        List<Pipelines> regexes = regexRepository.findAll();
+    private final ApplicationEventPublisher applicationEventPublisher;
 
-        if ("BENIGN".equals(attackType)) {
+    public void savePipeline(AnalysisResultDto analysisResultDto) {
+        EScript type = EScript.find(analysisResultDto.attackType().toString());
+        String script = analysisResultDto.body().get("script");
+
+        // Pipeline을 만들지 않는 공격이라면 저장하지 않음
+        if (type == null || script == null) {
             return;
         }
 
-        for (Pipelines regex : regexes) {
-            if (containsAttack(analysisResultDto.body(), regex.getRegex())) {
-                if (!attackExists(regex.getRegex())) {
-                    saveAttackLog(attackType, regex.getRegex());
-                }
+        // 해당 script에 대한 regex를 찾아서 pipeline을 만듦
+        List<Regex> regexes = regexRepository.findAllByDummyScriptContent(script);
+        List<Regex> addedRegexes = new ArrayList<>();
+
+        while (!regexes.isEmpty()) {
+            Regex regex = regexes.get(0);
+            regexes.remove(0);
+
+            try {
+                pipelineRepository.save(Pipeline.builder()
+                        .regex(regex.getContent()).build()
+                );
+
+                addedRegexes.add(regex);
+            } catch (Exception ignored) {
             }
         }
-    }
 
-    private boolean containsAttack(List<Map<String, String>> bodyList, String regexPattern) {
-        for (Map<String, String> body : bodyList) {
-            for (String bodyValue: body.values()) {
-                if (Pattern.matches(regexPattern, bodyValue)) {
-                    return true;
-                }
-            }
+        // 추가된 pipeline에 대해 이벤트를 발생시킴
+        for (Regex regex : addedRegexes) {
+            applicationEventPublisher.publishEvent(CreatePipelineEvent.builder()
+                    .regex(regex.getContent()).build()
+            );
         }
-        return false;
-    }
-
-    private boolean attackExists(String regexPattern) {
-        return attackRepository.existsByRegex(regexPattern);
-    }
-
-    private void saveAttackLog(String attackType, String regexPattern) {
-        attackRepository.save(WebServerLog.createWebServerLog(regexPattern, Enum.valueOf(EAttackType.class, attackType)));
     }
 }
