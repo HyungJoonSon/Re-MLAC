@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum EBlock {
+public enum ELogStatus {
     BLOCK("BLOCK"),
     UNBLOCK("UNBLOCK");
 

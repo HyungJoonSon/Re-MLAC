@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.dongguk.mlac.dto.type.EArea;
-import org.dongguk.mlac.dto.type.EBlock;
+import org.dongguk.mlac.dto.type.ELogStatus;
 import org.dongguk.mlac.dto.type.EOrganizer;
 
 import java.time.LocalDateTime;
@@ -17,7 +17,6 @@ import java.time.LocalDateTime;
 @Table(name = "web_application_server_logs")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WebApplicationServerLog {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,32 +24,32 @@ public class WebApplicationServerLog {
     @Column(name = "username", nullable = false, updatable = false)
     private String username;
 
-    @Column(name = "update_type", nullable = false, updatable = false)
+    @Column(name = "area", nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
-    private EBlock updateType;
+    private EArea area;
+
+    @Column(name = "status", nullable = false, updatable = false)
+    @Enumerated(EnumType.STRING)
+    private ELogStatus status;
 
     @Column(name = "organizer", nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
     private EOrganizer organizer;
 
-    @Column(name = "area", nullable = false, updatable = false)
-    @Enumerated(EnumType.STRING)
-    private EArea area;
-
-    @Column(name = "updated_at", nullable = false, updatable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 
     @Builder
     public WebApplicationServerLog(
             String username,
-            EBlock updateType,
-            EOrganizer organizer,
-            EArea area
+            EArea area,
+            ELogStatus status,
+            EOrganizer organizer
     ) {
         this.username = username;
-        this.updateType = updateType;
-        this.organizer = organizer;
         this.area = area;
-        this.updatedAt = LocalDateTime.now();
+        this.status = status;
+        this.organizer = organizer;
+        this.createdAt = LocalDateTime.now();
     }
 }

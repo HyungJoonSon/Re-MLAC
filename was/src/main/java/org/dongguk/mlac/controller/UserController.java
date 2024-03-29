@@ -2,7 +2,7 @@ package org.dongguk.mlac.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.dongguk.mlac.dto.common.ResponseDto;
-import org.dongguk.mlac.dto.request.UpdateUserStateRequestDto;
+import org.dongguk.mlac.dto.request.UserStateRequestDto;
 import org.dongguk.mlac.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +14,9 @@ public class UserController {
 
     @PatchMapping("")
     public ResponseDto<?> updateUserState(
-            @RequestBody UpdateUserStateRequestDto updateUserStateRequestDto
+            @RequestBody UserStateRequestDto userStateRequestDto
     ){
-        userService.updateUserState(updateUserStateRequestDto);
+        userService.updateUserState(userStateRequestDto);
         return ResponseDto.ok(null);
     }
 }

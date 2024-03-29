@@ -17,13 +17,13 @@ public enum EOrganizer {
 
     private final String value;
 
-    public static EOrganizer fromEAttack(EAttack value) {
-        if (value == null) {
+    public static EOrganizer fromEAttack(EAttack attack) {
+        if (attack == null) {
             return OBSERVING_SYSTEM;
         }
 
         return Arrays.stream(values())
-                .filter(v -> v.value.equals(value.toString()))
+                .filter(organizer -> organizer.value.equals(attack.toString()))
                 .findAny()
                 .orElse(null);
     }

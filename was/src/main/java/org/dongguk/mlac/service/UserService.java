@@ -2,9 +2,9 @@ package org.dongguk.mlac.service;
 
 import lombok.RequiredArgsConstructor;
 import org.dongguk.mlac.domain.User;
-import org.dongguk.mlac.dto.request.UpdateUserStateRequestDto;
+import org.dongguk.mlac.dto.request.UserStateRequestDto;
 import org.dongguk.mlac.dto.type.EArea;
-import org.dongguk.mlac.dto.type.EBlock;
+import org.dongguk.mlac.dto.type.ELogStatus;
 import org.dongguk.mlac.dto.type.EOrganizer;
 import org.dongguk.mlac.event.UpdateUserStateEvent;
 import org.dongguk.mlac.exception.CommonException;
@@ -22,19 +22,17 @@ public class UserService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
-    public void updateUserState(UpdateUserStateRequestDto updateUserStateRequestDto){
-        // 주최자를 확인하고 주최자가 없으면 return
-        EOrganizer organizer = EOrganizer.fromEAttack(updateUserStateRequestDto.attackType());
-        String username = (String) updateUserStateRequestDto.body().get("username");
-        Boolean isBlocked = (Boolean) updateUserStateRequestDto.body().get("is_blocked");
+    public void updateUserState(UserStateRequestDto requestDto){
+        EOrganizer organizer = EOrganizer.fromEAttack(requestDto.attackType());
+        String username = (String) requestDto.body().get("username");
+        Boolean isBlocked = (Boolean) requestDto.body().get("is_blocked");
 
-        if (organizer == null || username == null || isBlocked == null) {
+        if (!correspondedWebApplicationServer(organizer, username, isBlocked)) {
             return;
         }
 
         // 영역을 찾고, ObservingSystem이면 전체 유저에서 검색하고, 아니면 해당 영역에서 검색
         EArea area = EArea.fromEOrganizer(organizer);
-
         User user;
 
         if (area == null){
@@ -55,8 +53,12 @@ public class UserService {
         applicationEventPublisher.publishEvent(UpdateUserStateEvent.builder()
                 .username(user.getUsername())
                 .area(user.getArea())
-                .updateType(user.getIsBlocked() ? EBlock.BLOCK : EBlock.UNBLOCK)
+                .status(user.getIsBlocked() ? ELogStatus.BLOCK : ELogStatus.UNBLOCK)
                 .organizer(organizer).build()
         );
+    }
+
+    private Boolean correspondedWebApplicationServer(EOrganizer organizer, String username, Boolean isBlocked) {
+        return organizer != null && username != null && isBlocked != null;
     }
 }

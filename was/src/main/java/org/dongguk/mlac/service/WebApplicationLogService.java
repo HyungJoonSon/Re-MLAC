@@ -17,7 +17,7 @@ public class WebApplicationLogService {
     public void saveWebApplicationServerLog(UpdateUserStateEvent event) {
         webApplicationLogRepository.save(WebApplicationServerLog.builder()
                 .username(event.username())
-                .updateType(event.updateType())
+                .status(event.status())
                 .area(event.area())
                 .organizer(event.organizer()).build()
         );
