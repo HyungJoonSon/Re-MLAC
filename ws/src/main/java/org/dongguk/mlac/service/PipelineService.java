@@ -3,8 +3,8 @@ package org.dongguk.mlac.service;
 import lombok.RequiredArgsConstructor;
 import org.dongguk.mlac.domain.Pipeline;
 import org.dongguk.mlac.domain.Regex;
-import org.dongguk.mlac.dto.request.AnalysisResultDto;
-import org.dongguk.mlac.dto.type.EScript;
+import org.dongguk.mlac.dto.request.FilterResultDto;
+import org.dongguk.mlac.dto.type.EOrganizer;
 import org.dongguk.mlac.event.CreatePipelineEvent;
 import org.dongguk.mlac.repository.PipelineRepository;
 import org.dongguk.mlac.repository.RegexRepository;
@@ -22,12 +22,12 @@ public class PipelineService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    public void savePipeline(AnalysisResultDto analysisResultDto) {
-        EScript type = EScript.find(analysisResultDto.attackType().toString());
-        String script = analysisResultDto.body().get("script");
+    public void savePipeline(FilterResultDto requestDto) {
+        EOrganizer organizer = EOrganizer.fromEAttack(requestDto.attackType());
+        String script = requestDto.body().get("script");
 
         // Pipeline을 만들지 않는 공격이라면 저장하지 않음
-        if (type == null || script == null) {
+        if (!correspondedWebServer(organizer, script)) {
             return;
         }
 
@@ -52,8 +52,13 @@ public class PipelineService {
         // 추가된 pipeline에 대해 이벤트를 발생시킴
         for (Regex regex : addedRegexes) {
             applicationEventPublisher.publishEvent(CreatePipelineEvent.builder()
-                    .regex(regex.getContent()).build()
+                    .regex(regex.getContent())
+                    .organizer(organizer).build()
             );
         }
+    }
+
+    private Boolean correspondedWebServer(EOrganizer organizer, String script) {
+        return organizer != null && script != null;
     }
 }

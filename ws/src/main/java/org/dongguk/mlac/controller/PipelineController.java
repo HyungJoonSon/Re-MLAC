@@ -2,7 +2,7 @@ package org.dongguk.mlac.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.dongguk.mlac.dto.common.ResponseDto;
-import org.dongguk.mlac.dto.request.AnalysisResultDto;
+import org.dongguk.mlac.dto.request.FilterResultDto;
 import org.dongguk.mlac.service.PipelineService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,9 +17,9 @@ public class PipelineController {
 
     @PostMapping()
     public ResponseDto<?> createPipeline(
-            @RequestBody AnalysisResultDto analysisResultDto
+            @RequestBody FilterResultDto filterResultDto
     ){
-        pipelineService.savePipeline(analysisResultDto);
+        pipelineService.savePipeline(filterResultDto);
         return ResponseDto.ok(null);
     }
 }

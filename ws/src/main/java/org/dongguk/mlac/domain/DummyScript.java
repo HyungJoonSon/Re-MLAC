@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.dongguk.mlac.dto.type.EScript;
+import org.dongguk.mlac.dto.type.EAttack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,13 +25,13 @@ public class DummyScript {
 
     @Column(name = "type", nullable = false, updatable = false)
     @Enumerated(EnumType.STRING)
-    private EScript type;
+    private EAttack type;
 
     @OneToMany(mappedBy = "dummyScript", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<DummyScriptRegex> dummyScriptRegexes = new ArrayList<>();
 
     @Builder
-    public DummyScript(String content, EScript type) {
+    public DummyScript(String content, EAttack type) {
         this.content = content;
         this.type = type;
     }
