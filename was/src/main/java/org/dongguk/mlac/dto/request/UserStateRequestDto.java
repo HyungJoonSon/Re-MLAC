@@ -5,7 +5,7 @@ import org.dongguk.mlac.dto.type.EAttack;
 
 import java.util.Map;
 
-public record UpdateUserStateRequestDto(
+public record UserStateRequestDto(
         @JsonProperty("attack_type")
         EAttack attackType,
 

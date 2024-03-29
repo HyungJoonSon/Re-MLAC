@@ -1,4 +1,4 @@
-package org.dongguk.mlac.interceptor.post;
+package org.dongguk.mlac.advice;
 
 import org.dongguk.mlac.dto.common.ResponseDto;
 import org.springframework.core.MethodParameter;
@@ -10,10 +10,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 @RestControllerAdvice(basePackages = "org.dongguk.mlac")
-public class ResponseInterceptor implements ResponseBodyAdvice {
+public class ResponseAdvice implements ResponseBodyAdvice {
 
     @Override
-    public boolean supports(MethodParameter returnType, Class converterType) {
+    public boolean supports(
+            MethodParameter returnType,
+            Class converterType
+    ) {
         return true;
     }
 

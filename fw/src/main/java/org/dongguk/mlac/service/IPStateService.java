@@ -2,9 +2,10 @@ package org.dongguk.mlac.service;
 
 import lombok.RequiredArgsConstructor;
 import org.dongguk.mlac.domain.IPState;
-import org.dongguk.mlac.dto.request.AnalysisResultDto;
-import org.dongguk.mlac.dto.request.UpdateIPStateDto;
-import org.dongguk.mlac.dto.type.EBlock;
+import org.dongguk.mlac.dto.request.FilterRequestDto;
+import org.dongguk.mlac.dto.request.SystemRequestDto;
+import org.dongguk.mlac.dto.type.ELogStatus;
+import org.dongguk.mlac.dto.type.EOrganizer;
 import org.dongguk.mlac.event.CreateIPStateEvent;
 import org.dongguk.mlac.event.UpdateIPStateEvent;
 import org.dongguk.mlac.exception.CommonException;
@@ -21,46 +22,59 @@ public class IPStateService {
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    public void createIPState(AnalysisResultDto analysisResultDto) {
-        // 공격이 아니라면 무시
-        if ("BENIGN".equals(analysisResultDto.attackType())) {
-            return ;
+    @Transactional
+    public void createOrUpdateIPState(FilterRequestDto requestDto) {
+        EOrganizer organizer = EOrganizer.fromEAttack(requestDto.attackType());
+        String ip = requestDto.ip();
+
+        // Firewall에 해당하지 않는다면 return
+        if (!correspondedFirewall(organizer, ip)) {
+            return;
         }
 
         // IPState가 이미 존재한다면 예외 처리
-        ipStateRepository.findByIp(analysisResultDto.ip())
-                .orElseThrow(() -> new CommonException(ErrorCode.DUPLICATE_RESOURCE));
+        IPState ipState = ipStateRepository.findByIp(ip).orElseGet(() -> {
+            return ipStateRepository.save(IPState.builder()
+                    .ip(ip)
+                    .isBlocked(true).build());
+        });
 
-        // IPState가 차단되어 있지 않다면 차단
-        IPState ipState = ipStateRepository.save(IPState.builder()
-                .ip(analysisResultDto.ip())
-                .isBlocked(true).build()
-        );
+        if (ipState.getIsBlocked()) {
+            return;
+        } else {
+            ipState.updateBlocked(true);
+        }
 
         // Event 전파
         applicationEventPublisher.publishEvent(CreateIPStateEvent.builder()
-                .ip(ipState.getIp()).build()
+                .ip(ipState.getIp())
+                .organizer(organizer).build()
         );
     }
 
     @Transactional
-    public void updateIPState(String ip, UpdateIPStateDto updateIPStateDto) {
+    public void updateIPState(String ip, SystemRequestDto requestDto) {
         // IPState가 없다면 예외 처리
         IPState ipState = ipStateRepository.findByIp(ip)
                 .orElseThrow(() -> new CommonException(ErrorCode.NOT_FOUND_RESOURCE));
 
         // 만약 차단 상태가 같다면 무시
-        if (ipState.getIsBlocked() == updateIPStateDto.isBlocked()) {
-            throw new CommonException(ErrorCode.ALREADY_UPDATED);
+        if (ipState.getIsBlocked() == requestDto.isBlocked()) {
+            return;
         }
 
         // IPState 업데이트
-        ipState.updateBlocked(updateIPStateDto.isBlocked());
+        ipState.updateBlocked(requestDto.isBlocked());
 
         // Event 전파
         applicationEventPublisher.publishEvent(UpdateIPStateEvent.builder()
                 .ip(ipState.getIp())
-                .updateType(ipState.getIsBlocked() ? EBlock.BLOCK : EBlock.UNBLOCK).build()
+                .status(ipState.getIsBlocked() ? ELogStatus.BLOCK : ELogStatus.UNBLOCK)
+                .organizer(EOrganizer.OBSERVING_SYSTEM).build()
         );
+    }
+
+    private Boolean correspondedFirewall(EOrganizer organizer, String ip) {
+        return organizer != null && organizer != EOrganizer.BENIGN && ip != null;
     }
 }

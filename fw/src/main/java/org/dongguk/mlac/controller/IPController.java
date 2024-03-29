@@ -1,9 +1,9 @@
 package org.dongguk.mlac.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.dongguk.mlac.dto.request.AnalysisResultDto;
+import org.dongguk.mlac.dto.request.FilterRequestDto;
 import org.dongguk.mlac.dto.common.ResponseDto;
-import org.dongguk.mlac.dto.request.UpdateIPStateDto;
+import org.dongguk.mlac.dto.request.SystemRequestDto;
 import org.dongguk.mlac.service.IPStateService;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,18 +15,18 @@ public class IPController {
 
     @PostMapping("")
     public ResponseDto<?> createIPState(
-            @RequestBody AnalysisResultDto analysisResultDto
+            @RequestBody FilterRequestDto filterRequestDto
     ){
-        ipStateService.createIPState(analysisResultDto);
+        ipStateService.createOrUpdateIPState(filterRequestDto);
         return ResponseDto.ok(null);
     }
 
     @PatchMapping("/{ip}")
     public ResponseDto<?> updateIPState(
             @PathVariable("ip") String ip,
-            @RequestBody UpdateIPStateDto updateIPStateDto
+            @RequestBody SystemRequestDto systemRequestDto
     ){
-        ipStateService.updateIPState(ip, updateIPStateDto);
+        ipStateService.updateIPState(ip, systemRequestDto);
         return ResponseDto.ok(null);
     }
 }
